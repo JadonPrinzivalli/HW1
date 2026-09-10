@@ -1,21 +1,24 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <cmath>
 
 using namespace std;
 
-// Used ChatGPT to help with command line input and error checking.
+// Used ChatGPT to help with command line input, error checking,
+// and organizing parts of the program.
 
 // Average times per day I thought about digit sums of a^b last week: 0
 
 bool isValidNumber(string input)
 {
-    // Makes sure the input is not empty.
+    // Makes sure something was entered.
     if (input.empty())
     {
         return false;
     }
 
-    // Checks that every character is a digit.
+    // Makes sure every character is a digit.
     for (int i = 0; i < input.length(); i++)
     {
         if (input[i] < '0' || input[i] > '9')
@@ -27,12 +30,13 @@ bool isValidNumber(string input)
     return true;
 }
 
-unsigned int power(unsigned short a, unsigned short b)
+unsigned long long int power(unsigned int a, unsigned int b)
 {
-    // Multiplies a by itself b times.
-    unsigned int result = 1;
+    // Starts at 1 so a zero exponent works correctly.
+    unsigned long long int result = 1;
 
-    for (unsigned short i = 0; i < b; i++)
+    // Multiplies by a, b number of times.
+    for (unsigned int i = 0; i < b; i++)
     {
         result *= a;
     }
@@ -40,18 +44,53 @@ unsigned int power(unsigned short a, unsigned short b)
     return result;
 }
 
-unsigned int sumDigits(unsigned int n)
+vector<int> vectorize_digits(unsigned long long n)
 {
-    unsigned int sum = 0;
+    vector<int> digits;
 
-    // Takes off each digit and adds it to the sum.
-    while (n > 0)
+    // Changes the number into a string so each digit can be accessed.
+    string number = to_string(n);
+
+    for (int i = 0; i < number.length(); i++)
     {
-        sum += n % 10;
-        n /= 10;
+        // Subtracting '0' changes the character into an integer.
+        digits.push_back(number[i] - '0');
+    }
+
+    return digits;
+}
+
+int sum_vector(vector<int> v)
+{
+    int sum = 0;
+
+    // Adds every value in the vector.
+    for (int i = 0; i < v.size(); i++)
+    {
+        sum += v[i];
     }
 
     return sum;
+}
+
+string vec_to_string(vector<int> vec)
+{
+    string result = "[";
+
+    for (int i = 0; i < vec.size(); i++)
+    {
+        result += to_string(vec[i]);
+
+        // Adds a comma after every number except the last one.
+        if (i < vec.size() - 1)
+        {
+            result += ", ";
+        }
+    }
+
+    result += "]";
+
+    return result;
 }
 
 int main(int argc, char* argv[])
@@ -66,20 +105,29 @@ int main(int argc, char* argv[])
     string aInput = argv[1];
     string bInput = argv[2];
 
-    if (!isValidNumber(aInput) || !isValidNumber(bInput))
+    // Checks negative numbers separately for a clear error message.
+    if ((!aInput.empty() && aInput[0] == '-') ||
+        (!bInput.empty() && bInput[0] == '-'))
     {
-        cout << "Error: positive integers only." << endl;
+        cout << "Error: negative numbers are not allowed." << endl;
         return 1;
     }
 
-    int aValue;
-    int bValue;
+    // Rejects letters, decimals, and other non-integer input.
+    if (!isValidNumber(aInput) || !isValidNumber(bInput))
+    {
+        cout << "Error: integers only." << endl;
+        return 1;
+    }
 
-    // Handles numbers that are too large for stoi.
+    unsigned long long int aValue;
+    unsigned long long int bValue;
+
+    // Converts the input strings into numbers.
     try
     {
-        aValue = stoi(aInput);
-        bValue = stoi(bInput);
+        aValue = stoull(aInput);
+        bValue = stoull(bInput);
     }
     catch (...)
     {
@@ -87,18 +135,28 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // unsigned short max is 65535.
-    if (aValue > 65535 || bValue > 65535)
+    // power() takes unsigned int parameters, so the inputs must fit.
+    if (aValue > 4294967295ULL || bValue > 4294967295ULL)
     {
         cout << "Error: value too large." << endl;
         return 1;
     }
 
-    unsigned short a = aValue;
-    unsigned short b = bValue;
+    unsigned int a = aValue;
+    unsigned int b = bValue;
 
-    unsigned int result = power(a, b);
-    unsigned int digitSum = sumDigits(result);
+    // Checks if a^b would be too large before calculating it.
+    if (a > 0 && b > 0 &&
+        b * log10(a) >= 64 * log10(2))
+    {
+        cout << "Error: result would cause overflow." << endl;
+        return 1;
+    }
+
+    // Finds a^b, turns its digits into a vector, then sums them.
+    unsigned long long int result = power(a, b);
+    vector<int> digits = vectorize_digits(result);
+    int digitSum = sum_vector(digits);
 
     cout << a << "^" << b << " = " << result << endl;
     cout << "Sum Of Digits: " << digitSum << endl;
