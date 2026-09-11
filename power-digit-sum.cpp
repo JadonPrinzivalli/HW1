@@ -12,13 +12,12 @@ using namespace std;
 
 bool isValidNumber(string input)
 {
-    // Makes sure something was entered.
+    // Makes sure the input can be treated as a whole number.
     if (input.empty())
     {
         return false;
     }
 
-    // Makes sure every character is a digit.
     for (int i = 0; i < input.length(); i++)
     {
         if (input[i] < '0' || input[i] > '9')
@@ -32,10 +31,9 @@ bool isValidNumber(string input)
 
 unsigned long long int power(unsigned int a, unsigned int b)
 {
-    // Starts at 1 so a zero exponent works correctly.
+    // Starts at 1 so a^0 returns 1 correctly.
     unsigned long long int result = 1;
 
-    // Multiplies by a, b number of times.
     for (unsigned int i = 0; i < b; i++)
     {
         result *= a;
@@ -46,14 +44,14 @@ unsigned long long int power(unsigned int a, unsigned int b)
 
 vector<int> vectorize_digits(unsigned long long n)
 {
+    // A vector is used so each digit can be stored separately.
     vector<int> digits;
 
-    // Changes the number into a string so each digit can be accessed.
     string number = to_string(n);
 
     for (int i = 0; i < number.length(); i++)
     {
-        // Subtracting '0' changes the character into an integer.
+        // Subtracting '0' changes the digit character into an integer.
         digits.push_back(number[i] - '0');
     }
 
@@ -62,9 +60,9 @@ vector<int> vectorize_digits(unsigned long long n)
 
 int sum_vector(vector<int> v)
 {
+    // Keeps one running total as the vector is read.
     int sum = 0;
 
-    // Adds every value in the vector.
     for (int i = 0; i < v.size(); i++)
     {
         sum += v[i];
@@ -75,13 +73,14 @@ int sum_vector(vector<int> v)
 
 string vec_to_string(vector<int> vec)
 {
+    // Builds the string in the exact bracket and comma format needed.
     string result = "[";
 
     for (int i = 0; i < vec.size(); i++)
     {
         result += to_string(vec[i]);
 
-        // Adds a comma after every number except the last one.
+        // Avoids putting a comma after the final value.
         if (i < vec.size() - 1)
         {
             result += ", ";
@@ -95,7 +94,7 @@ string vec_to_string(vector<int> vec)
 
 int main(int argc, char* argv[])
 {
-    // Need the program name plus two inputs.
+    // argc must be 3 because the program name also counts as an argument.
     if (argc != 3)
     {
         cout << "Usage: ./pds <base> <exponent>" << endl;
@@ -105,7 +104,7 @@ int main(int argc, char* argv[])
     string aInput = argv[1];
     string bInput = argv[2];
 
-    // Checks negative numbers separately for a clear error message.
+    // Checks negatives first so they get their own error message.
     if ((!aInput.empty() && aInput[0] == '-') ||
         (!bInput.empty() && bInput[0] == '-'))
     {
@@ -123,7 +122,7 @@ int main(int argc, char* argv[])
     unsigned long long int aValue;
     unsigned long long int bValue;
 
-    // Converts the input strings into numbers.
+    // stoull gives enough room to check the values before using unsigned int.
     try
     {
         aValue = stoull(aInput);
@@ -135,7 +134,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // power() takes unsigned int parameters, so the inputs must fit.
+    // power() takes unsigned int values, so the inputs must fit that type.
     if (aValue > 4294967295ULL || bValue > 4294967295ULL)
     {
         cout << "Error: value too large." << endl;
@@ -145,7 +144,7 @@ int main(int argc, char* argv[])
     unsigned int a = aValue;
     unsigned int b = bValue;
 
-    // Checks if a^b would be too large before calculating it.
+    // Uses logs to check the size of a^b before actually calculating it.
     if (a > 0 && b > 0 &&
         b * log10(a) >= 64 * log10(2))
     {
@@ -153,7 +152,7 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    // Finds a^b, turns its digits into a vector, then sums them.
+    // Uses the required functions in order to get the final digit sum.
     unsigned long long int result = power(a, b);
     vector<int> digits = vectorize_digits(result);
     int digitSum = sum_vector(digits);
